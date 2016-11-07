@@ -147,7 +147,7 @@ public:
 
 int main(int argc, const char * argv[]) {
     
-    MineSweeper boardOne(8, 8);
+    MineSweeper boardOne(3, 3);
     boardOne.drawBoard(true);
 //    boardOne.drawBoard();
     
