@@ -36,18 +36,18 @@ public:
             
         }
         
-        numUnrevealedSpaces = int(board.size());
+        numUnrevealedSpaces = int(board.size() * board[0].size());
     }
     void drawBoard(bool showAll = false){
         cout << endl << "Board: " << endl;
         cout << "  ";
         for (int i = 0; i < board[0].size(); i++){
-            cout << i << " ";
+            cout << i%10 << " ";
         }
         cout << endl;
         
         for (int i = 0; i < board.size(); i++) {
-            cout << i << " ";
+            cout << i%10 << " ";
             for (int j = 0; j < board[i].size(); j++){
                 
                 if (board[i][j] == -1) {
@@ -99,7 +99,7 @@ public:
     }
     
     int calculateSpace(int guessx, int guessy){
-        cout << "* ";
+        // cout << "* ";
         if (!checkCoords(guessx, guessy) || board[guessx][guessy] == 0)
             return 0;
         
@@ -147,7 +147,7 @@ public:
 
 int main(int argc, const char * argv[]) {
     
-    MineSweeper boardOne(10, 14);
+    MineSweeper boardOne(8, 8);
     boardOne.drawBoard(true);
 //    boardOne.drawBoard();
     
