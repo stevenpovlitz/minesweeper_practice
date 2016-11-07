@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <vector>
+#include <time.h>
 
 using namespace std;
 
@@ -22,12 +23,17 @@ public:
         
         board.resize(sizey);
         
+        numUnrevealedSpaces = 0;
+        
+        srand (time(NULL));
+        
         for (int i = 0; i < sizey; i++) {
             for (int j = 0; j < sizex; j++){
                 int seed = int(rand()%4-4);
                 
                 if (seed == -1) {
                     board[i].push_back(seed);
+                    numUnrevealedSpaces--;
                 }
                 else {
                     board[i].push_back(-2);
@@ -35,8 +41,7 @@ public:
             }
             
         }
-        
-        numUnrevealedSpaces = int(board.size() * board[0].size());
+        numUnrevealedSpaces += int(board.size() * board[0].size());
     }
     void drawBoard(bool showAll = false){
         cout << endl << "Board: " << endl;
@@ -126,17 +131,18 @@ public:
             if (checkCoords(guessx+1, guessy-1) && board[guessx+1][guessy-1]!=0) calculateSpace(guessx+1, guessy-1);
             if (checkCoords(guessx+1, guessy) && board[guessx+1][guessy]!=0) calculateSpace(guessx+1, guessy);
             if (checkCoords(guessx+1, guessy+1) && board[guessx+1][guessy+1]!=0) calculateSpace(guessx+1, guessy+1);
-            
         }
-        
-        
-        
-        // run recursion, assuming the current
-        
+        numUnrevealedSpaces--;
         return 0;
     }
     
     void getInput() {
+        if (numUnrevealedSpaces < 0){
+            cout << "WINNER" << endl;
+            drawBoard(true);
+            // cout << numUnrevealedSpaces << endl; // debugging
+            exit(3);
+        }
         cout << "enter a move in x, y format" << endl;
         int x, y;
         cin >> y >> x;
@@ -149,7 +155,6 @@ int main(int argc, const char * argv[]) {
     
     MineSweeper boardOne(3, 3);
     boardOne.drawBoard(true);
-//    boardOne.drawBoard();
     
     while (true) {
         boardOne.getInput();
