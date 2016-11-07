@@ -38,9 +38,8 @@ public:
         
         numUnrevealedSpaces = int(board.size());
     }
-    
-    void drawBoard(){
-        cout << "Board: " << endl;
+    void drawBoard(bool showAll = false){
+        cout << endl << "Board: " << endl;
         cout << "  ";
         for (int i = 0; i < board[0].size(); i++){
             cout << i << " ";
@@ -52,7 +51,10 @@ public:
             for (int j = 0; j < board[i].size(); j++){
                 
                 if (board[i][j] == -1) {
-                    cout << "b" << " ";
+                    if (showAll)
+                        cout << "b" << " ";
+                    else
+                        cout << "-" << " ";
                 }
                 else if (board[i][j] == -2) {
                     cout << "-" << " ";
@@ -66,59 +68,78 @@ public:
         }
     }
     
-    int calculateSpace(int guessx, int guessy, bool ahead = true){
-        // NOTE: NEED something to STOP this function from just solving entire board: check
-        // adjacent vs recursive solve adjacent, based on if any neighbors have bombs
+    bool checkCoords(int x, int y) {
+        return x >= 0 && x < board.size() && y >= 0 && y < board[0].size();
+    }
+    
+    int adjacentBombs(int x, int y){
+        int sumAdjacent = 0;
         
-        if (!(guessx >= 0 && guessx < board[0].size() && guessy >= 0 && guessy < board.size())) {
-            // invalid input
+        // top row
+        if (checkCoords(x-1, y-1)) sumAdjacent += board[x-1][y-1] == -1;
+        if (checkCoords(x-1, y)) sumAdjacent += board[x-1][y] == -1;
+        if (checkCoords(x-1, y+1)) sumAdjacent += board[x-1][y+1] == -1;
+        
+        // middle row
+        if (checkCoords(x, y-1)) sumAdjacent += board[x][y-1] == -1;
+        if (checkCoords(x, y+1)) sumAdjacent += board[x][y+1] == -1;
+        
+        // top row
+        if (checkCoords(x+1, y-1)) sumAdjacent += board[x+1][y-1] == -1;
+        if (checkCoords(x+1, y)) sumAdjacent += board[x+1][y] == -1;
+        if (checkCoords(x+1, y+1)) sumAdjacent += board[x+1][y+1] == -1;
+        
+        return sumAdjacent;
+    }
+    
+    void exitGame(){
+        cout << "Space Selected is a BOMB!" << endl;
+        drawBoard(true);
+        exit(1);
+    }
+    
+    int calculateSpace(int guessx, int guessy){
+        cout << "* ";
+        if (!checkCoords(guessx, guessy) || board[guessx][guessy] == 0)
             return 0;
-        }
-        else {
-            if (ahead) {
-                return board[guessx][guessy] == -1;
-            }
-            
-            if (board[guessx][guessy] == -1) {
-                return 1; // this is a bomb;
-            }
-            
-            board[guessx][guessy] = -5; // temp val
-            
-            int adjacentVals = calculateSpace(guessx-1, guessy-1) + calculateSpace(guessx, guessy-1) + calculateSpace(guessx+1, guessy-1) +
-            calculateSpace(guessx-1, guessy) + calculateSpace(guessx+1, guessy) +
-            calculateSpace(guessx-1, guessy+1) + calculateSpace(guessx, guessy+1) + calculateSpace(guessx+1, guessy+1);
-            
-            if (adjacentVals > 0) {
-                
-                board[guessx][guessy] = adjacentVals;
-            }
-            else {
-                calculateSpace(guessx-1, guessy-1, false); calculateSpace(guessx, guessy-1, false); calculateSpace(guessx+1, guessy-1, false);
-                calculateSpace(guessx-1, guessy, false); calculateSpace(guessx+1, guessy, false);
-                calculateSpace(guessx-1, guessy+1, false); calculateSpace(guessx, guessy+1, false); calculateSpace(guessx+1, guessy+1, false);
-                
-            }
-            
-        }
-        return 0;
         
+        if (board[guessx][guessy] == -1)
+            exitGame();
+        
+        if (adjacentBombs(guessx, guessy) > 0)
+            board[guessx][guessy] = adjacentBombs(guessx, guessy);
+        else if (adjacentBombs(guessx, guessy) == 0) {
+            board[guessx][guessy] = 0;
+            
+            // recursively call this fun on all adjacent and diagonal that aren't value zero and are real coords
+            
+            // top row
+            if (checkCoords(guessx-1, guessy-1) && board[guessx-1][guessy-1]!=0) calculateSpace(guessx-1, guessy-1);
+            if (checkCoords(guessx-1, guessy) && board[guessx-1][guessy]!=0) calculateSpace(guessx-1, guessy);
+            if (checkCoords(guessx-1, guessy+1) && board[guessx-1][guessy+1]!=0) calculateSpace(guessx-1, guessy+1);
+            
+            // middle row
+            if (checkCoords(guessx, guessy-1) && board[guessx][guessy-1]!=0) calculateSpace(guessx, guessy-1);
+            if (checkCoords(guessx, guessy+1) && board[guessx][guessy+1]!=0) calculateSpace(guessx, guessy+1);
+            
+            // top row
+            if (checkCoords(guessx+1, guessy-1) && board[guessx+1][guessy-1]!=0) calculateSpace(guessx+1, guessy-1);
+            if (checkCoords(guessx+1, guessy) && board[guessx+1][guessy]!=0) calculateSpace(guessx+1, guessy);
+            if (checkCoords(guessx+1, guessy+1) && board[guessx+1][guessy+1]!=0) calculateSpace(guessx+1, guessy+1);
+            
+        }
+        
+        
+        
+        // run recursion, assuming the current
+        
+        return 0;
     }
     
     void getInput() {
         cout << "enter a move in x, y format" << endl;
         int x, y;
         cin >> y >> x;
-        
-        if (board[x][y] == -1) {
-            
-            cout << "BOMB!" << endl;
-            exit(1);
-            
-        }
-        
-        // have some event for clicking on a bomb
-        
         calculateSpace(x, y);
     }
     
@@ -126,33 +147,14 @@ public:
 
 int main(int argc, const char * argv[]) {
     
-    MineSweeper boardOne(6, 4);
+    MineSweeper boardOne(10, 14);
+    boardOne.drawBoard(true);
+//    boardOne.drawBoard();
     
-    boardOne.drawBoard();
-    boardOne.getInput();
-    boardOne.drawBoard();
-    
+    while (true) {
+        boardOne.getInput();
+        boardOne.drawBoard();
+        
+    }
     return 0;
 }
-
-
-/*
- int toReturn = 0; // 0 is no spaces adjacent with bomb, 8 is all spaces near have bomb
- 
- if (guessx >= 0 && guessx < board[0].size() && guessy >= 0 && guessy < board.size()) {
- if (board[guessy][guessy] == -1) {
- toReturn = -1;
- }
- else {
- toReturn += calculateSpace(guessx-1, guessy-1) + calculateSpace(guessx, guessy-1) + calculateSpace(guessx+1, guessy-1) +
- calculateSpace(guessx-1, guessy) + calculateSpace(guessx+1, guessy) +
- calculateSpace(guessx-1, guessy+1) + calculateSpace(guessx, guessy+1) + calculateSpace(guessx+1, guessy+1);
- }
- 
- if (toReturn >= 0)
- board[guessx][guessy] = toReturn;
- }
- 
- 
- return toReturn;
-*/
